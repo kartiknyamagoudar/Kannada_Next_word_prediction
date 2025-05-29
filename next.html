@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+  <meta charset="UTF-8">
+  <title>Kannada Next Word Prediction</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+      border-radius: 12px;
+      background: #f9f9f9;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    input[type="text"] {
+      width: 95%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #2e86de;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1b4f72;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #2c3e50;
+    }
+  </style>
+</head>
+<body>
+  <h2>Kannada Next Word Predictor</h2>
+  <input type="text" id="kannadaInput" placeholder="ಕನ್ನಡ ಪದಗಳನ್ನು ಇಲ್ಲಿ ನಮೂದಿಸಿ..." />
+  <button onclick="predict()">Get Prediction</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function predict() {
+      const inputText = document.getElementById('kannadaInput').value;
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = "Predicting...";
+  
+      try {
+        const response = await fetch('http://127.0.0.1:5000/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: inputText, num_predictions: 50 })
+        });
+  
+        const data = await response.json();
+  
+        if (data.predictions) {
+          resultDiv.innerHTML = `
+            <strong>Predictions for:</strong> "${data.input}"<br><br>
+            ${data.predictions.map(word => `
+              <div 
+                style="cursor:pointer; padding: 5px; border-bottom: 1px solid #ddd;" 
+                onclick="setInputAndPredict('${data.input} ${word}')">
+                ${data.input} <strong>${word}</strong>
+              </div>
+            `).join('')}
+          `;
+        } else {
+          resultDiv.innerHTML = "No predictions returned.";
+        }
+  
+      } catch (error) {
+        resultDiv.innerHTML = "Error: Unable to connect to API.";
+        console.error("Error:", error);
+      }
+    }
+  
+    function setInputAndPredict(fullSentence) {
+      document.getElementById('kannadaInput').value = fullSentence;
+      predict();
+    }
+  </script>
+  
+</body>
+</html>
